@@ -12,7 +12,6 @@ from scheduler.linear_noise_scheduler import LinearNoiseScheduler
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-
 def train(args):
     # Read the config file #
     with open(args.config_path, 'r') as file:
@@ -35,7 +34,7 @@ def train(args):
     
     # Create the dataset
     mnist = MnistDataset('train', im_path=dataset_config['im_path'])
-    mnist_loader = DataLoader(mnist, batch_size=train_config['batch_size'], shuffle=True, num_workers=4)
+    mnist_loader = DataLoader(mnist, batch_size=train_config['batch_size'], shuffle=True, num_workers=1)
     
     # Instantiate the model
     model = Unet(model_config).to(device)

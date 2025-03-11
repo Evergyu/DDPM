@@ -14,7 +14,7 @@ class MnistDataset(Dataset):
     Created a dataset class rather using torchvision to allow
     replacement with any other image dataset
     """
-    def __init__(self, split, im_path, im_ext='png'):
+    def __init__(self, split, im_path, im_ext='jpg'):
         r"""
         Init method for initializing the dataset properties
         :param split: train/test to locate the image files
@@ -24,7 +24,22 @@ class MnistDataset(Dataset):
         """
         self.split = split
         self.im_ext = im_ext
+        self.prep_images(im_path)
         self.images, self.labels = self.load_images(im_path)
+    
+    def prep_images(self, im_path):
+        r"""
+        Resizing Image
+        """
+        ims = []
+        assert os.path.exists(im_path), "images path {} does not exist".format(im_path)
+        for d_name in tqdm(os.listdir(im_path)):
+            for fname in glob.glob(os.path.join(im_path, d_name, '*.{}'.format(self.im_ext))):
+                ims.append(fname)
+                img = Image.open(fname)
+                img = img.resize((64,64))
+                img.save(fname, "JPEG")
+        print('Found {} images for split {}'.format(len(ims), self.split))    
     
     def load_images(self, im_path):
         r"""
