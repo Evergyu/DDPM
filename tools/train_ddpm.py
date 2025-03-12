@@ -9,6 +9,7 @@ from dataset.mnist_dataset import MnistDataset
 from torch.utils.data import DataLoader
 from models.unet_base import Unet
 from scheduler.linear_noise_scheduler import LinearNoiseScheduler
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -23,7 +24,8 @@ def train(args):
     ########################
     
     diffusion_config = config['diffusion_params']
-    dataset_config = config['dataset_params']
+    # dataset_config = config['dataset_params']
+    dataset_config = args.dataset_config
     model_config = config['model_params']
     train_config = config['train_params']
     
@@ -33,7 +35,8 @@ def train(args):
                                      beta_end=diffusion_config['beta_end'])
     
     # Create the dataset
-    mnist = MnistDataset('train', im_path=dataset_config['im_path'])
+    mnist = MnistDataset('train', im_path=dataset_config)
+    # mnist = MnistDataset('train', im_path=dataset_config['im_path'])
     mnist_loader = DataLoader(mnist, batch_size=train_config['batch_size'], shuffle=True, num_workers=1)
     
     # Instantiate the model
@@ -44,15 +47,20 @@ def train(args):
     if not os.path.exists(train_config['task_name']):
         os.mkdir(train_config['task_name'])
     
+    # Remove Checkpoint if found    
+    if os.path.exists(os.path.join(train_config['task_name'], train_config['ckpt_name'])):
+        os.remove(os.path.join(train_config['task_name'], train_config['ckpt_name']))
+    
     # Load checkpoint if found
     if os.path.exists(os.path.join(train_config['task_name'],train_config['ckpt_name'])):
         print('Loading checkpoint as found one')
         model.load_state_dict(torch.load(os.path.join(train_config['task_name'],
-                                                      train_config['ckpt_name']), map_location=device))
+                                                      train_config['ckpt_name']), map_location=device, weights_only=True))
     # Specify training parameters
     num_epochs = train_config['num_epochs']
     optimizer = Adam(model.parameters(), lr=train_config['lr'])
     criterion = torch.nn.MSELoss()
+    
     
     # Run training
     for epoch_idx in range(num_epochs):
@@ -72,6 +80,8 @@ def train(args):
             noise_pred = model(noisy_im, t)
 
             loss = criterion(noise_pred, noise)
+            
+            
             losses.append(loss.item())
             loss.backward()
             optimizer.step()
@@ -89,5 +99,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Arguments for ddpm training')
     parser.add_argument('--config', dest='config_path',
                         default='config/default.yaml', type=str)
+    parser.add_argument('--dataset_config', dest='dataset_config',
+                        default='data/train_100/images', type=str)
     args = parser.parse_args()
     train(args)

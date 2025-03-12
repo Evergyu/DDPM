@@ -1,16 +1,32 @@
+# '''./default 저장 이름
+# samples/ samples_{img_size}_{train_data_num}_{Loss}/
+# ddpm_ckpt_{img_size}_{train_data_num}_{Loss}.
+
+# img_size: 64
+# train_data_num: 1 5 25 100
+# Loss: MSE
+
+# e.g. samples_64_1_MSE 
+# e.g. ddpm_ckpt_64_1_MSE.pth 
+# '''
+
+# ./data/train_{1/5/25/100}/images
 dataset_params:
-  im_path: './data/train/images'
+  # im_path: './data/train_1/images'
+  # im_path: './data/train_5/images'
+  # im_path: './data/train_25/images'
+  # im_path: './data/train_100/images'
 
 diffusion_params:
   num_timesteps : 1000
-  beta_start : 0.0001
+  beta_start : 0.001
   beta_end : 0.02
 
 model_params:
   im_channels : 1
   im_size : 64
-  down_channels : [32, 64, 128, 256]
-  mid_channels : [256, 256, 128]
+  down_channels : [64, 128, 256, 512]
+  mid_channels : [512, 512, 256]
   down_sample : [True, True, False]
   time_emb_dim : 128
   num_down_layers : 2
@@ -21,8 +37,8 @@ model_params:
 train_params:
   task_name: 'default'
   batch_size: 1
-  num_epochs: 1000
-  num_samples : 5
-  num_grid_rows : 10
+  num_epochs: 500
+  num_samples : 25
+  num_grid_rows : 5
   lr: 0.0001
   ckpt_name: 'ddpm_ckpt.pth'

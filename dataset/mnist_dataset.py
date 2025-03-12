@@ -6,6 +6,7 @@ from PIL import Image
 from tqdm import tqdm
 from torch.utils.data.dataloader import DataLoader
 from torch.utils.data.dataset import Dataset
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 
 class MnistDataset(Dataset):
@@ -38,6 +39,7 @@ class MnistDataset(Dataset):
                 ims.append(fname)
                 img = Image.open(fname)
                 img = img.resize((64,64))
+                img = img.convert('L')
                 img.save(fname, "JPEG")
         print('Found {} images for split {}'.format(len(ims), self.split))    
     
